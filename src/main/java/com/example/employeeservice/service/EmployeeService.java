@@ -1,19 +1,32 @@
 package com.example.employeeservice.service;
 
 import com.example.employeeservice.dto.EmployeeRequestDTO;
+import com.example.employeeservice.event.EmployeeCreatedEvent;
 import com.example.employeeservice.exception.EmployeeAlreadyExistsException;
 import com.example.employeeservice.exception.EmployeeNotFoundException;
 import com.example.employeeservice.model.Employee;
+import com.example.employeeservice.producer.EmployeeEventProducer;
 import com.example.employeeservice.repository.EmployeeRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 /**
- * Service class for managing employee business logic.
- * Provides methods for creating and retrieving employee records while ensuring
- * data integrity and providing traceability through logging.
+ * Core service layer for managing employee lifecycle and business logic.
+ * <p>
+ * This service acts as the orchestrator for employee operations, ensuring data integrity,
+ * auditability, and event-driven communication with downstream microservices.
+ * <p>
+ * <b>Responsibilities:</b>
+ * <ul>
+ *     <li>Validation of employee data constraints (e.g., uniqueness).</li>
+ *     <li>Safe audit logging with automated PII masking.</li>
+ *     <li>Synchronous database persistence via {@link EmployeeRepository}.</li>
+ *     <li>Asynchronous event propagation to Kafka via {@link EmployeeEventProducer}.</li>
+ * </ul>
  */
 @Slf4j
 @Service
@@ -21,20 +34,22 @@ import org.springframework.transaction.annotation.Transactional;
 public class EmployeeService {
 
     private final EmployeeRepository employeeRepository;
+    private final EmployeeEventProducer eventProducer;
 
     /**
-     * Creates a new employee after validating that no duplicate exists by FML and email.
+     * Creates and persists a new employee record.
      * <p>
-     * This method performs the following steps:
-     * 1. Logs the attempt to create an employee (masking sensitive PII via Logback).
-     * 2. Checks for existing records in the database using repository methods.
-     * 3. Throws {@link EmployeeAlreadyExistsException} if a conflict is detected and logs a warning.
-     * 4. Persists the new employee entity.
-     * 5. Logs the successful creation with the generated ID.
+     * <b>Process Workflow:</b>
+     * <ol>
+     *     <li>Logs the registration attempt (sensitive data is masked by {@code MaskingConverter}).</li>
+     *     <li>Performs uniqueness validation using {@code countByName}.</li>
+     *     <li>Persists the new {@link Employee} entity within a {@code @Transactional} context.</li>
+     *     <li>Publishes an {@link EmployeeCreatedEvent} to the Kafka topic {@code employee.service.employeeData}.</li>
+     * </ol>
      *
-     * @param dto the employee data transfer object containing input details
-     * @return the saved {@link Employee} entity
-     * @throws EmployeeAlreadyExistsException if an employee with the same name already exists
+     * @param dto the transfer object containing employee details (title, names, contact info)
+     * @return the successfully persisted {@link Employee} entity with generated ID
+     * @throws EmployeeAlreadyExistsException if a record with the same full name already exists
      */
     @Transactional
     public Employee createEmployee(EmployeeRequestDTO dto) {
@@ -49,14 +64,7 @@ public class EmployeeService {
         if (exists) {
             log.warn("Failed to create employee: Employee with name '{} {}' already exists",
                     dto.lastName(), dto.firstName());
-
-            throw new EmployeeAlreadyExistsException(
-                    String.format("Employee with full name '%s %s %s' already exists",
-                                    dto.lastName(),
-                                    dto.firstName(),
-                                    dto.middleName() != null ? dto.middleName() : "")
-                            .replaceAll("\\s+", " ").trim()
-            );
+            throw new EmployeeAlreadyExistsException("Employee already exists");
         }
 
         Employee employee = Employee.builder()
@@ -71,24 +79,27 @@ public class EmployeeService {
         Employee savedEmployee = employeeRepository.save(employee);
         log.info("Employee created successfully with ID: {}", savedEmployee.getId());
 
+        eventProducer.sendEmployeeCreatedEvent(new EmployeeCreatedEvent(
+                savedEmployee.getId(),
+                savedEmployee.getEmail(),
+                LocalDateTime.now()
+        ));
+
         return savedEmployee;
     }
 
     /**
-     * Retrieves an employee by their unique identifier.
+     * Retrieves an employee record by their unique primary key.
      * <p>
-     * Behavior:
-     * 1. Logs the search request for auditing purposes.
-     * 2. Queries the database for the specified ID.
-     * 3. Throws {@link EmployeeNotFoundException} if the resource does not exist.
+     * This method logs every retrieval attempt for audit purposes. If the employee
+     * is not found, an {@link EmployeeNotFoundException} is thrown.
      *
-     * @param id the database ID of the employee
-     * @return the {@link Employee} entity if found
-     * @throws EmployeeNotFoundException if no employee exists with the given ID
+     * @param id the database identifier of the employee
+     * @return the requested {@link Employee} entity
+     * @throws EmployeeNotFoundException if no record corresponds to the given ID
      */
     public Employee getEmployeeById(Long id) {
         log.info("Fetching employee details for ID: {}", id);
-
         return employeeRepository.findById(id)
                 .orElseThrow(() -> {
                     log.error("Employee retrieval failed: ID {} not found", id);
