@@ -17,8 +17,8 @@ import java.time.LocalDateTime;
         name = "employees",
         uniqueConstraints = {
                 @UniqueConstraint(
-                        name = "uk_employee_fio",
-                        columnNames = {"title", "first_name", "last_name"}
+                        name = "uk_employee_fml",
+                        columnNames = {"title", "first_name", "last_name", "middle_name"}
                 )
         }
 )
@@ -35,6 +35,9 @@ public class Employee {
 
     @Column(name = "first_name", nullable = false)
     private String firstName;
+
+    @Column(name = "middle_name")
+    private String middleName;
 
     @Column(name = "last_name", nullable = false)
     private String lastName;
@@ -53,14 +56,16 @@ public class Employee {
      *
      * @param title     the title prefix (e.g., Mr, Ms, Dr)
      * @param firstName the first name of the employee
+     * @param middleName the patronymic of the employee
      * @param lastName  the last name of the employee
      * @param email     the email address of the employee
      * @param phone     the phone number of the employee
      */
     @Builder
-    public Employee(String title, String firstName, String lastName, String email, String phone) {
+    public Employee(String title, String firstName, String middleName, String lastName, String email, String phone) {
         this.title = title;
         this.firstName = firstName;
+        this.middleName = middleName;
         this.lastName = lastName;
         this.email = email;
         this.phone = phone;
