@@ -38,14 +38,12 @@ public class EmployeeService {
 
     /**
      * Creates and persists a new employee record.
-     * <p>
-     * <b>Process Workflow:</b>
-     * <ol>
-     *     <li>Logs the registration attempt (sensitive data is masked by {@code MaskingConverter}).</li>
-     *     <li>Performs uniqueness validation using {@code countByName}.</li>
-     *     <li>Persists the new {@link Employee} entity within a {@code @Transactional} context.</li>
-     *     <li>Publishes an {@link EmployeeCreatedEvent} to the Kafka topic {@code employee.service.employeeData}.</li>
-     * </ol>
+     * Process Workflow:
+     *     Logs the registration attempt (sensitive data is masked by MaskingConverter).
+     *     Performs uniqueness validation using countByName.
+     *     Persists the new {@link Employee} entity within a {@code @Transactional} context.
+     *     Publishes an {@link EmployeeCreatedEvent} to the Kafka topic {@code employee.service.employeeData}.
+     *
      *
      * @param dto the transfer object containing employee details (title, names, contact info)
      * @return the successfully persisted {@link Employee} entity with generated ID
@@ -90,7 +88,6 @@ public class EmployeeService {
 
     /**
      * Retrieves an employee record by their unique primary key.
-     * <p>
      * This method logs every retrieval attempt for audit purposes. If the employee
      * is not found, an {@link EmployeeNotFoundException} is thrown.
      *
