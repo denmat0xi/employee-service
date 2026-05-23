@@ -33,15 +33,15 @@ import java.util.concurrent.TimeUnit;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Integration test suite for {@link EmployeeEventProducer}.
+ * Integration test suite for {@link EmployeeEventProducerImpl}.
  * Verifies that events are correctly serialized and published to the Kafka broker.
  */
 @SpringBootTest
 @EmbeddedKafka(partitions = 1, topics = {"employee.service.employeeData"})
-class EmployeeEventProducerTest {
+class EmployeeEventProducerImplTest {
 
     @Autowired
-    private EmployeeEventProducer producer;
+    private EmployeeEventProducerImpl producer;
 
     @Autowired
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")

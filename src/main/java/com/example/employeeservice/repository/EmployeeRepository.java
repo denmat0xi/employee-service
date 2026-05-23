@@ -20,6 +20,11 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
      * @param middleName the patronymic or middle name
      * @return num of duplicates in db
      */
-    @Query("SELECT COUNT(e) FROM Employee e WHERE e.lastName = :lastName AND e.firstName = :firstName AND e.middleName = :middleName")
-    Long countByName(@Param("lastName") String lastName, @Param("firstName") String firstName, @Param("middleName") String middleName);
+    @Query("SELECT count(e) FROM Employee e " +
+            "WHERE e.name.last = :lastName " +
+            "AND e.name.first = :firstName " +
+            "AND e.name.middle = :middleName")
+    long countByName(@Param("lastName") String lastName,
+                     @Param("firstName") String firstName,
+                     @Param("middleName") String middleName);
 }

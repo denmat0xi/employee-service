@@ -1,6 +1,6 @@
-### 1. Login to get the JWT token
-# This request sends credentials to authenticate and retrieves a token.
-# The script below saves the 'token' from the response to a global variable.
+### 1. Получение токена (Login)
+# Этот запрос сохраняет токен в переменную окружения IDEA,
+# чтобы мы могли использовать его в других запросах.
 POST http://localhost:8080/auth/login
 Content-Type: application/json
 
@@ -8,22 +8,101 @@ Content-Type: application/json
   "username": "admin",
   "password": "admin123"
 }
+> {% client.global.set("auth_token", response.body.token); %}
 
-> {%
-    client.global.set("auth_token", response.body.token);
-%}
-
-### 2. Create a new employee (Protected Endpoint)
-# This request requires a valid JWT token in the Authorization header.
-# It uses the 'auth_token' variable captured from the previous login request.
+### 2. Успешное создание сотрудника (Authorized)
+# Ожидаемый результат: 201 Created
 POST http://localhost:8080/employee
-Content-Type: application/json
 Authorization: Bearer {{auth_token}}
+Content-Type: application/json
 
 {
+  "results": [
+    {
+      "gender": "male",
+      "name": {
+        "title": "Mr",
+        "first": "John",
+        "last": "Doe",
+        "middle": "Alexander"
+      },
+      "location": {
+        "street": {
+          "number": 123,
+          "name": "Main Street"
+        },
+        "city": "Springfield",
+        "state": "Illinois",
+        "country": "USA",
+        "postcode": "62704",
+        "coordinates": {
+          "latitude": "39.7817",
+          "longitude": "-89.6501"
+        },
+        "timezone": {
+          "offset": "-6:00",
+          "description": "Central Time (US & Canada)"
+        }
+      },
+      "email": "john.doe@example.com",
+      "login": {
+        "uuid": "550e8400-e29b-41d4-a716-446655440000"
+      },
+      "dob": {
+        "date": "1990-05-24T03:04:45.000Z",
+        "age": 36
+      },
+      "registered": {
+        "date": "2015-01-01T12:00:00.000Z",
+        "age": 11
+      },
+      "phone": "217-555-0100",
+      "cell": "217-555-0199",
+      "id": {
+        "name": "SSN",
+        "value": "999-00-1234"
+      },
+      "picture": {
+        "large": "https://randomuser.me/api/portraits/men/1.jpg",
+        "medium": "https://randomuser.me/api/portraits/med/men/1.jpg",
+        "thumbnail": "https://randomuser.me/api/portraits/thumb/men/1.jpg"
+      },
+      "nat": "US"
+    }
+  ]
+}
+
+### 3. Успешное получение данных (Authorized)
+# Ожидаемый результат: 200 OK
+GET http://localhost:8080/employee/1
+Authorization: Bearer {{auth_token}}
+
+### 4. Негативный тест: Создание без токена (Unauthorized)
+# Ожидаемый результат: 401 Unauthorized
+# Spring Security должен заблокировать этот запрос до контроллера
+POST http://localhost:8080/employee
+Content-Type: application/json
+
+{
+  "title": "Intern",
+  "firstName": "Anonymous",
+  "lastName": "User",
+  "email": "anon@example.com"
+}
+
+### 5. Негативный тест: Получение данных без токена (Unauthorized)
+# Ожидаемый результат: 401 Unauthorized
+GET http://localhost:8080/employee/1
+
+### 6. Негативный тест: Неверный токен (Forbidden/Unauthorized)
+# Ожидаемый результат: 401 или 403, так как токен поддельный
+POST http://localhost:8080/employee
+Authorization: Bearer invalid-token-string
+Content-Type: application/json
+
+{
+  "title": "Hacker",
   "firstName": "John",
   "lastName": "Doe",
-  "middleName": "William",
-  "email": "john.doe@example.com",
-  "title": "Senior Developer"
+  "email": "hack@example.com"
 }

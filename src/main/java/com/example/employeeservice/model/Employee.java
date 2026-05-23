@@ -1,17 +1,10 @@
 package com.example.employeeservice.model;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
-/**
- * Entity representing an employee.
- * All fields are immutable after creation to satisfy business requirements.
- */
 @Entity
 @Table(
         name = "employees",
@@ -23,52 +16,61 @@ import java.time.LocalDateTime;
         }
 )
 @Getter
+@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 public class Employee {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "title", nullable = false)
-    private String title;
+    @Embedded
+    private Name name;
 
-    @Column(name = "first_name", nullable = false)
-    private String firstName;
+    @Embedded
+    private Location location;
 
-    @Column(name = "middle_name")
-    private String middleName;
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "date", column = @Column(name = "dob_date")),
+            @AttributeOverride(name = "age", column = @Column(name = "dob_age"))
+    })
+    private Dob dob;
 
-    @Column(name = "last_name", nullable = false)
-    private String lastName;
+    @Embedded
+    private Picture picture; // НОВОЕ: фото (large, medium, thumbnail)
 
-    @Column(name = "email", nullable = false)
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "date", column = @Column(name = "registered_date")),
+            @AttributeOverride(name = "age", column = @Column(name = "registered_age"))
+    })
+    private RegistrationInfo registered; // НОВОЕ: дата регистрации и возраст в системе
+
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "name", column = @Column(name = "id_name")),
+            @AttributeOverride(name = "value", column = @Column(name = "id_value"))
+    })
+    private IdentityInfo identityInfo; // НОВОЕ: документ (TFN и т.д.)
+
+    @Column(nullable = false)
     private String email;
 
-    @Column(name = "phone")
     private String phone;
+
+    private String cell; // НОВОЕ: второй телефон
+
+    private String gender;
+
+    private String nat; // НОВОЕ: национальность
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    /**
-     * Constructs a new Employee instance with current timestamp.
-     *
-     * @param title     the title prefix (e.g., Mr, Ms, Dr)
-     * @param firstName the first name of the employee
-     * @param middleName the patronymic of the employee
-     * @param lastName  the last name of the employee
-     * @param email     the email address of the employee
-     * @param phone     the phone number of the employee
-     */
-    @Builder
-    public Employee(String title, String firstName, String middleName, String lastName, String email, String phone) {
-        this.title = title;
-        this.firstName = firstName;
-        this.middleName = middleName;
-        this.lastName = lastName;
-        this.email = email;
-        this.phone = phone;
+    @PrePersist
+    protected void onCreate() {
         this.createdAt = LocalDateTime.now();
     }
 }
