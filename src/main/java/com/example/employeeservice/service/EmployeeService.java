@@ -2,6 +2,7 @@ package com.example.employeeservice.service;
 
 import com.example.employeeservice.dto.EmployeeRequestDTO;
 import com.example.employeeservice.exception.EmployeeAlreadyExistsException;
+import com.example.employeeservice.exception.EmployeeNotFoundException;
 import com.example.employeeservice.model.Employee;
 import com.example.employeeservice.repository.EmployeeRepository;
 import lombok.RequiredArgsConstructor;
@@ -52,5 +53,17 @@ public class EmployeeService {
                 .build();
 
         return employeeRepository.save(employee);
+    }
+
+    /**
+     * Retrieves an employee by their unique identifier.
+     *
+     * @param id the database ID of the employee
+     * @return the Employee entity if found
+     * @throws EmployeeNotFoundException if no employee exists with the given ID
+     */
+    public Employee getEmployeeById(Long id) {
+        return employeeRepository.findById(id)
+                .orElseThrow(() -> new EmployeeNotFoundException("Employee with id " + id + " not found"));
     }
 }

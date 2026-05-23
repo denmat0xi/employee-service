@@ -7,16 +7,13 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * REST controller for managing employee-related endpoints.
  */
 @RestController
-@RequestMapping("/api/v1/employees")
+@RequestMapping("/employee")
 @RequiredArgsConstructor
 public class EmployeeController {
 
@@ -32,5 +29,16 @@ public class EmployeeController {
     public ResponseEntity<Employee> createEmployee(@Valid @RequestBody EmployeeRequestDTO dto) {
         Employee createdEmployee = employeeService.createEmployee(dto);
         return new ResponseEntity<>(createdEmployee, HttpStatus.CREATED);
+    }
+
+    /**
+     * Fetches details of a specific employee by ID.
+     *
+     * @param id the ID of the employee to retrieve
+     * @return a ResponseEntity containing the employee data and a 200 OK status
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<Employee> getEmployee(@PathVariable Long id) {
+        return ResponseEntity.ok(employeeService.getEmployeeById(id));
     }
 }

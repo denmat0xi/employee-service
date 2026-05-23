@@ -19,11 +19,12 @@ public class ErrorResponse {
     /**
      * Constructs a new ErrorResponse.
      *
-     * @param status    the HTTP status code
-     * @param error     the error description or reason phrases
-     * @param message   the detailed error message
+     * @param now
+     * @param status  the HTTP status code
+     * @param error   the error description or reason phrases
+     * @param message the detailed error message
      */
-    public ErrorResponse(int status, String error, String message) {
+    public ErrorResponse(LocalDateTime now, int status, String error, String message) {
         this.status = status;
         this.error = error;
         this.message = message;

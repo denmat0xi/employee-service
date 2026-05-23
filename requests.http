@@ -1,133 +1,68 @@
-### ====================================================================
-### POSITIVE SCENARIOS (HAPPY PATH)
-### ====================================================================
-
-### 1. Create a brand new employee with full FIO (including Middle Name)
-POST http://localhost:8080/api/v1/employees
+### 1. Create a new employee (Valid)
+POST http://localhost:8080/employee
 Content-Type: application/json
 
 {
   "title": "Mr.",
-  "lastName": "Smith",
   "firstName": "John",
-  "middleName": "Edward",
+  "lastName": "Smith",
+  "middleName": "Alexander",
   "email": "john.smith@example.com",
-  "phone": "+1234567890"
+  "phone": "+79991234567"
 }
 
-### 2. Create an employee WITHOUT a Middle Name (e.g., foreign citizen)
-### This should succeed because middleName is not annotated with @NotBlank
-POST http://localhost:8080/api/v1/employees
-Content-Type: application/json
-
-{
-  "title": "Ms.",
-  "lastName": "Blunt",
-  "firstName": "Emily",
-  "middleName": null,
-  "email": "emily.blunt@example.com",
-  "phone": "+1987654321"
-}
-
-### 3. Create a person with the SAME First and Last name, but a DIFFERENT Middle Name
-### This should succeed! (John Edward Smith vs John Peterson Smith)
-POST http://localhost:8080/api/v1/employees
+### 2. Create a duplicate employee (Should return 409 Conflict)
+POST http://localhost:8080/employee
 Content-Type: application/json
 
 {
   "title": "Mr.",
-  "lastName": "Smith",
   "firstName": "John",
-  "middleName": "Peterson",
-  "email": "john.peterson@example.com",
-  "phone": "+1555666777"
-}
-
-
-### ====================================================================
-### BUSINESS LOGIC VALIDATION (DB UNIQUE CONSTRAINTS)
-### ====================================================================
-
-### 4. Duplicate Email Check (Should fail with 409 Conflict)
-### Uses an existing email (john.smith@example.com) but completely different FIO
-POST http://localhost:8080/api/v1/employees
-Content-Type: application/json
-
-{
-  "title": "Dr.",
-  "lastName": "Watson",
-  "firstName": "Emma",
-  "middleName": "Grace",
-  "email": "john.smith@example.com",
-  "phone": "+111222333"
-}
-
-### 5. Duplicate FIO Check (Should fail with 409 Conflict)
-### Uses an existing full name (Smith John Edward) but a completely fresh email
-POST http://localhost:8080/api/v1/employees
-Content-Type: application/json
-
-{
-  "title": "Prof.",
   "lastName": "Smith",
-  "firstName": "John",
-  "middleName": "Edward",
-  "email": "fresh.email@example.com",
-  "phone": "+444555666"
+  "middleName": "Alexander",
+  "email": "john.duplicate@example.com",
+  "phone": "+79990000000"
 }
 
+### 3. Get employee by ID (Valid)
+# Need change {id} to ID which returned at first response
+GET http://localhost:8080/employee/1
 
-### ====================================================================
-### INPUT VALIDATION (jakarta.validation / DTO Constraints)
-### ====================================================================
+### 4. Get employee by invalid ID (Should return 404 Not Found)
+GET http://localhost:8080/employee/9999
 
-### 6. Missing Title (Should fail with 400 Bad Request)
-POST http://localhost:8080/api/v1/employees
+### 5. Create employee with missing fields (Should return 400 Bad Request)
+POST http://localhost:8080/employee
 Content-Type: application/json
 
 {
+  "title": "Mr.",
+  "lastName": "Smith"
+}
+
+### 6. Create employee with invalid email (Should return 400 Bad Request)
+POST http://localhost:8080/employee
+Content-Type: application/json
+
+{
+  "title": "Mr.",
+  "firstName": "John",
   "lastName": "Doe",
-  "firstName": "Jane",
-  "middleName": "Mary",
-  "email": "jane.doe@example.com",
-  "phone": "+777888999"
+  "email": "not-an-email",
+  "phone": "+79991234567"
 }
 
-### 7. Missing Mandatory Names (Should fail with 400 Bad Request)
-POST http://localhost:8080/api/v1/employees
+### 7. Create employee with invalid phone format (Should return 400 Bad Request)
+POST http://localhost:8080/employee
 Content-Type: application/json
 
 {
   "title": "Mr.",
-  "lastName": "",
-  "firstName": "   ",
-  "middleName": "ValidMiddle",
-  "email": "validation.test@example.com",
-  "phone": "+123"
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "john.doe@test.com",
+  "phone": "123"
 }
 
-### 8. Invalid Email Format (Should fail with 400 Bad Request)
-POST http://localhost:8080/api/v1/employees
-Content-Type: application/json
-
-{
-  "title": "Mr.",
-  "lastName": "Simpson",
-  "firstName": "Homer",
-  "middleName": "Jay",
-  "email": "homer.simpson_at_domain.com",
-  "phone": "+555333"
-}
-
-### 9. Empty Email (Should fail with 400 Bad Request)
-POST http://localhost:8080/api/v1/employees
-Content-Type: application/json
-
-{
-  "title": "Mr.",
-  "lastName": "Simpson",
-  "firstName": "Homer",
-  "middleName": "Jay",
-  "email": "",
-  "phone": "+555333"
-}
+### 8. GET request with wrong type (Should return 400 Bad Request)
+GET http://localhost:8080/employee/abc
