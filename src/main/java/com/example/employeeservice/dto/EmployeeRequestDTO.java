@@ -3,38 +3,38 @@ package com.example.employeeservice.dto;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
-import lombok.Getter;
 
 /**
  * Data transfer object for incoming employee creation requests.
- * Contains validation constraints for required fields.
  */
-@Getter
 @Builder
-public final class EmployeeRequestDTO {
+public record EmployeeRequestDTO(
+        @NotBlank(message = "Title is required")
+        String title,
 
-    @NotBlank(message = "Title is required")
-    private final String title;
+        @NotBlank(message = "Last name (Surname) is required")
+        String lastName,
 
-    @NotBlank(message = "First name is required")
-    private final String firstName;
+        @NotBlank(message = "First name is required")
+        String firstName,
 
-    @NotBlank(message = "Last name is required")
-    private final String lastName;
+        String middleName,
 
-    @NotBlank(message = "Email is required")
-    @Email(message = "Invalid email format")
-    private final String email;
+        @NotBlank(message = "Email is required")
+        @Email(message = "Invalid email format")
+        String email,
 
-    private final String phone;
+        String phone
+) {
 
     /**
      * Constructs an immutable EmployeeRequestDTO instance.
      */
-    public EmployeeRequestDTO(String title, String firstName, String lastName, String email, String phone) {
+    public EmployeeRequestDTO(String title, String lastName, String firstName, String middleName, String email, String phone) {
         this.title = title;
-        this.firstName = firstName;
         this.lastName = lastName;
+        this.firstName = firstName;
+        this.middleName = middleName;
         this.email = email;
         this.phone = phone;
     }

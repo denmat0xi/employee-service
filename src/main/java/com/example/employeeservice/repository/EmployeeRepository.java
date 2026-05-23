@@ -2,21 +2,27 @@ package com.example.employeeservice.repository;
 
 import com.example.employeeservice.model.Employee;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 /**
- * Repository interface for managing Employee entities in the database.
+ * Repository interface for Employee entity connections.
  */
 @Repository
 public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
     /**
-     * Checks if an employee already exists by their full name combination.
+     * Checks if an employee exists by their full name (FIO).
      *
-     * @param firstName the first name of the employee
-     * @param lastName  the last name of the employee
-     * @param title     the title prefix of the employee
-     * @return true if a matching record exists, false otherwise
+     * @param lastName   the family name
+     * @param firstName  the given name
+     * @param middleName the patronymic or middle name
+     * @return true if a duplicate exists, false otherwise
      */
-    boolean existsByFirstNameAndLastNameAndTitle(String firstName, String lastName, String title);
+    @Query("SELECT COUNT(e) FROM Employee e WHERE e.lastName = :lastName AND e.firstName = :firstName AND e.middleName = :middleName")
+    Long countByName(@Param("lastName") String lastName, @Param("firstName") String firstName, @Param("middleName") String middleName);
+
+    @Query("SELECT COUNT(e) FROM Employee e WHERE e.email = :email")
+    Long countByEmail(@Param("email") String email);
 }
