@@ -53,9 +53,9 @@ public class Employee {
 
     /**
      * Unique email address of the employee.
-     * Mandatory field; duplicate emails are strictly prohibited in the system.
+     * Mandatory field.
      */
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String email;
 
     /**

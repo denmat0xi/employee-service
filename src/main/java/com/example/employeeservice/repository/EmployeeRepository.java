@@ -22,7 +22,4 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
      */
     @Query("SELECT COUNT(e) FROM Employee e WHERE e.lastName = :lastName AND e.firstName = :firstName AND e.middleName = :middleName")
     Long countByName(@Param("lastName") String lastName, @Param("firstName") String firstName, @Param("middleName") String middleName);
-
-    @Query("SELECT COUNT(e) FROM Employee e WHERE e.email = :email")
-    Long countByEmail(@Param("email") String email);
 }

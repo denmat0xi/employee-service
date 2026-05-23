@@ -26,12 +26,6 @@ public class EmployeeService {
      */
     @Transactional
     public Employee createEmployee(EmployeeRequestDTO dto) {
-
-        if (employeeRepository.countByEmail(dto.email()) > 0) {
-            throw new EmployeeAlreadyExistsException(
-                    String.format("Employee with email '%s' already exists", dto.email())
-            );
-        }
         boolean exists = employeeRepository.countByName(
                 dto.lastName(),
                 dto.firstName(),
