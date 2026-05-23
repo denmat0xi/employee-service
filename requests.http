@@ -1,68 +1,29 @@
-### 1. Create a new employee (Valid)
-POST http://localhost:8080/employee
+### 1. Login to get the JWT token
+# This request sends credentials to authenticate and retrieves a token.
+# The script below saves the 'token' from the response to a global variable.
+POST http://localhost:8080/auth/login
 Content-Type: application/json
 
 {
-  "title": "Mr.",
-  "firstName": "John",
-  "lastName": "Smith",
-  "middleName": "Alexander",
-  "email": "john.smith@example.com",
-  "phone": "+79991234567"
+  "username": "admin",
+  "password": "admin123"
 }
 
-### 2. Create a duplicate employee (Should return 409 Conflict)
+> {%
+    client.global.set("auth_token", response.body.token);
+%}
+
+### 2. Create a new employee (Protected Endpoint)
+# This request requires a valid JWT token in the Authorization header.
+# It uses the 'auth_token' variable captured from the previous login request.
 POST http://localhost:8080/employee
 Content-Type: application/json
+Authorization: Bearer {{auth_token}}
 
 {
-  "title": "Mr.",
-  "firstName": "John",
-  "lastName": "Smith",
-  "middleName": "Alexander",
-  "email": "john.duplicate@example.com",
-  "phone": "+79990000000"
-}
-
-### 3. Get employee by ID (Valid)
-# Need change {id} to ID which returned at first response
-GET http://localhost:8080/employee/1
-
-### 4. Get employee by invalid ID (Should return 404 Not Found)
-GET http://localhost:8080/employee/9999
-
-### 5. Create employee with missing fields (Should return 400 Bad Request)
-POST http://localhost:8080/employee
-Content-Type: application/json
-
-{
-  "title": "Mr.",
-  "lastName": "Smith"
-}
-
-### 6. Create employee with invalid email (Should return 400 Bad Request)
-POST http://localhost:8080/employee
-Content-Type: application/json
-
-{
-  "title": "Mr.",
   "firstName": "John",
   "lastName": "Doe",
-  "email": "not-an-email",
-  "phone": "+79991234567"
+  "middleName": "William",
+  "email": "john.doe@example.com",
+  "title": "Senior Developer"
 }
-
-### 7. Create employee with invalid phone format (Should return 400 Bad Request)
-POST http://localhost:8080/employee
-Content-Type: application/json
-
-{
-  "title": "Mr.",
-  "firstName": "John",
-  "lastName": "Doe",
-  "email": "john.doe@test.com",
-  "phone": "123"
-}
-
-### 8. GET request with wrong type (Should return 400 Bad Request)
-GET http://localhost:8080/employee/abc
