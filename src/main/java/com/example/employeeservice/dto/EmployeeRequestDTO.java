@@ -1,10 +1,13 @@
 package com.example.employeeservice.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Builder;
+import lombok.extern.jackson.Jacksonized;
 
-import java.time.LocalDateTime;
 
 @Builder
+@JsonIgnoreProperties(ignoreUnknown = true)
+@Jacksonized
 public record EmployeeRequestDTO(
         NameDTO name,
         LocationDTO location,

@@ -19,7 +19,7 @@ import java.time.ZonedDateTime;
 public class EmployeeScheduler {
 
     private final EmployeeService employeeService;
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
 
     @Scheduled(cron = "0 0 0 * * *")
@@ -32,7 +32,6 @@ public class EmployeeScheduler {
 
             JsonNode user = root.path("results").get(0);
 
-            // 1. Собираем вложенные DTO
             NameDTO nameDto = NameDTO.builder()
                     .title(user.path("name").path("title").asText())
                     .first(user.path("name").path("first").asText())
@@ -80,7 +79,6 @@ public class EmployeeScheduler {
                     .value(user.path("id").path("value").asText())
                     .build();
 
-            // 2. Собираем главный DTO
             EmployeeRequestDTO dto = EmployeeRequestDTO.builder()
                     .name(nameDto)
                     .location(locationDto)
@@ -95,13 +93,12 @@ public class EmployeeScheduler {
                     .id(idDto)
                     .build();
 
-            // 3. Передаем в сервис
             employeeService.createEmployee(dto);
             log.info("Daily employee created successfully: {}", dto.email());
 
         } catch (Exception e) {
             log.error("Failed to fetch or create daily employee: {}", e.getMessage());
-            e.printStackTrace(); // Поможет увидеть, если где-то упал парсинг
+            e.printStackTrace();
         }
     }
 }
